@@ -12,11 +12,20 @@ export class ChatGeminiNano extends BaseChatModel {
   private temperature: number;
   private topK: number;
   private modelName = 'gemini-nano';
+  private isOptimizationEnabled = true; // Enable Nano-specific optimizations
 
   constructor(config: { temperature?: number; topK?: number } = {}) {
     super({});
-    this.temperature = config.temperature ?? 0.5;
-    this.topK = config.topK ?? 40;
+    // Use optimized settings by default for Gemini Nano
+    // These are tuned specifically for small model performance
+    this.temperature = config.temperature ?? 0.15; // Very low for deterministic behavior
+    this.topK = config.topK ?? 1; // Only best token
+
+    console.log('[GeminiNano] Initialized with optimized settings:', {
+      temperature: this.temperature,
+      topK: this.topK,
+      optimizationEnabled: this.isOptimizationEnabled,
+    });
   }
 
   /**
@@ -28,19 +37,30 @@ export class ChatGeminiNano extends BaseChatModel {
 
   /**
    * Convert LangChain messages to a format suitable for Gemini Nano
+   * Adds JSON formatting instructions to improve structured output
    */
   private formatMessages(messages: BaseMessage[]): string {
     let formattedPrompt = '';
     let systemPrompt = '';
+    let hasJsonInstruction = false;
 
     for (const message of messages) {
       if (message instanceof SystemMessage) {
-        systemPrompt += message.content + '\n\n';
+        const content = message.content as string;
+        systemPrompt += content + '\n\n';
+        // Check if system prompt already has JSON instructions
+        hasJsonInstruction = content.toLowerCase().includes('json') && content.includes('{');
       } else if (message instanceof HumanMessage) {
         formattedPrompt += `User: ${message.content}\n`;
       } else if (message instanceof AIMessage) {
         formattedPrompt += `Assistant: ${message.content}\n`;
       }
+    }
+
+    // Add explicit JSON formatting instruction if system prompt expects JSON response
+    if (hasJsonInstruction) {
+      formattedPrompt +=
+        '\nIMPORTANT: Respond ONLY with valid JSON. Do not include any explanation, markdown, or text outside the JSON object. Start your response with { and end with }.\n';
     }
 
     // Combine system prompt with conversation
@@ -103,6 +123,11 @@ export class ChatGeminiNano extends BaseChatModel {
 
       // Generate response
       const response = await session.prompt(prompt);
+
+      // Log the raw response for debugging
+      console.log('[GeminiNano] Raw response preview:', response.slice(0, 300));
+      console.log('[GeminiNano] Response length:', response.length);
+      console.log('[GeminiNano] Starts with JSON:', response.trimStart().startsWith('{'));
 
       // Clean up session
       session.destroy();

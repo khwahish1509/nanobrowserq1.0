@@ -322,31 +322,55 @@ export class NavigatorAgent extends BaseAgent<z.ZodType, NavigatorResult> {
    */
   private fixActions(response: this['ModelOutput']): Record<string, unknown>[] {
     let actions: Record<string, unknown>[] = [];
+
+    logger.debug('[fixActions] Raw action type:', typeof response.action);
+    logger.debug('[fixActions] Raw action value:', response.action);
+
     if (Array.isArray(response.action)) {
-      // if the item is null, skip it
-      actions = response.action.filter((item: unknown) => item !== null);
+      // if the item is null or undefined, skip it
+      actions = response.action.filter((item: unknown) => item !== null && item !== undefined);
+
+      // Validate each action has exactly one key
+      for (let i = 0; i < actions.length; i++) {
+        const action = actions[i];
+        const keys = Object.keys(action);
+        if (keys.length === 0) {
+          logger.error(`[fixActions] Action ${i} has no keys:`, action);
+          throw new Error(`Action ${i} is empty - model returned invalid action format`);
+        }
+        if (keys.length > 1) {
+          logger.warning(`[fixActions] Action ${i} has multiple keys, using first:`, keys);
+        }
+        logger.debug(`[fixActions] Action ${i}: ${keys[0]}`);
+      }
+
       if (actions.length === 0) {
-        logger.warning('No valid actions found', response.action);
+        logger.error('[fixActions] No valid actions found in array:', response.action);
+        throw new Error('Model returned empty or invalid action array');
       }
     } else if (typeof response.action === 'string') {
       try {
-        logger.warning('Unexpected action format', response.action);
+        logger.warning('[fixActions] Unexpected string action format:', response.action.slice(0, 200));
         // First try to parse the action string directly
         actions = JSON.parse(response.action);
       } catch (parseError) {
         try {
           // If direct parsing fails, try to fix the JSON first
           const fixedAction = repairJsonString(response.action);
-          logger.info('Fixed action string', fixedAction);
+          logger.info('[fixActions] Repaired action string:', fixedAction);
           actions = JSON.parse(fixedAction);
         } catch (error) {
-          logger.error('Invalid action format even after repair attempt', response.action);
-          throw new Error('Invalid action output format');
+          logger.error('[fixActions] Invalid action format even after repair:', response.action);
+          throw new Error('Invalid action output format - could not parse action string');
         }
       }
-    } else {
+    } else if (response.action && typeof response.action === 'object') {
       // if the action is neither an array nor a string, it should be an object
+      logger.debug('[fixActions] Single action object detected');
       actions = [response.action];
+    } else {
+      logger.error('[fixActions] Invalid action type:', typeof response.action, response.action);
+      throw new Error(`Invalid action type: expected array, string, or object, got ${typeof response.action}`);
     }
     return actions;
   }
@@ -373,7 +397,10 @@ export class NavigatorAgent extends BaseAgent<z.ZodType, NavigatorResult> {
 
         const actionInstance = this.actionRegistry.getAction(actionName);
         if (actionInstance === undefined) {
-          throw new Error(`Action ${actionName} not exists`);
+          const validActions = Object.keys(this.actionRegistry['actions']);
+          logger.error(`Invalid action "${actionName}". Valid actions are:`, validActions);
+          logger.error('Full action object:', action);
+          throw new Error(`Action "${actionName}" not exists. Valid actions: ${validActions.join(', ')}`);
         }
 
         const indexArg = actionInstance.getIndexArg(actionArgs);
