@@ -105,6 +105,9 @@ export abstract class BaseAgent<T extends z.ZodType, M = unknown> {
 
   // Set whether to use structured output based on the model name
   private setWithStructuredOutput(): boolean {
+    if (this.provider === ProviderTypeEnum.GeminiNano) {
+      return false;
+    }
     if (this.modelName === 'deepseek-reasoner' || this.modelName === 'deepseek-r1') {
       return false;
     }
@@ -173,6 +176,12 @@ export abstract class BaseAgent<T extends z.ZodType, M = unknown> {
 
       if (typeof response.content === 'string') {
         response.content = removeThinkTags(response.content);
+
+        // Log raw response for debugging (especially for Gemini Nano)
+        if (this.modelName === 'gemini-nano') {
+          logger.debug(`[${this.modelName}] Raw response:`, response.content.substring(0, 500));
+        }
+
         try {
           const extractedJson = extractJsonFromModelOutput(response.content);
           const parsed = this.validateModelOutput(extractedJson);
@@ -181,6 +190,7 @@ export abstract class BaseAgent<T extends z.ZodType, M = unknown> {
           }
         } catch (error) {
           logger.error(`[${this.modelName}] Failed to extract JSON from response:`, error);
+          logger.error(`[${this.modelName}] Response content:`, response.content.substring(0, 1000));
           const errorMessage = `Failed to extract JSON from response: ${error}`;
           throw new Error(errorMessage);
         }

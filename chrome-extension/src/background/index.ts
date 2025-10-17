@@ -320,6 +320,8 @@ async function setupExecutor(taskId: string, task: string, browserContext: Brows
       planningInterval: generalSettings.planningInterval,
     },
     generalSettings: generalSettings,
+    navigatorProvider: navigatorModel.provider,
+    plannerProvider: plannerModel?.provider,
   });
 
   return executor;

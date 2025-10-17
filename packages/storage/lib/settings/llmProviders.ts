@@ -67,6 +67,7 @@ export function getProviderTypeByProviderId(providerId: string): ProviderTypeEnu
     case ProviderTypeEnum.OpenRouter:
     case ProviderTypeEnum.Groq:
     case ProviderTypeEnum.Cerebras:
+    case ProviderTypeEnum.GeminiNano:
       return providerId;
     default:
       return ProviderTypeEnum.CustomOpenAI;
@@ -99,6 +100,8 @@ export function getDefaultDisplayNameFromProviderId(providerId: string): string 
       return 'Cerebras';
     case ProviderTypeEnum.Llama:
       return 'Llama';
+    case ProviderTypeEnum.GeminiNano:
+      return 'Gemini Nano (Built-in)';
     default:
       return providerId; // Use the provider id as display name for custom providers by default
   }
@@ -163,6 +166,12 @@ export function getDefaultProviderConfig(providerId: string): ProviderConfig {
 }
 
 export function getDefaultAgentModelParams(providerId: string, agentName: AgentNameEnum): Record<string, number> {
+  if (!providerId) {
+    return {
+      temperature: 0,
+      topP: 0,
+    };
+  }
   const newParameters = llmProviderParameters[providerId as keyof typeof llmProviderParameters]?.[agentName] || {
     temperature: 0.1,
     topP: 0.1,
