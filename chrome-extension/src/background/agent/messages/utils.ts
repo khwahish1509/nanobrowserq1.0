@@ -40,6 +40,35 @@ export function removeThinkTags(text: string): string {
 }
 
 /**
+ * Sanitize JSON string by fixing common issues from LLM outputs
+ */
+function sanitizeJsonString(str: string): string {
+  let cleaned = str;
+
+  // Remove trailing commas before closing braces/brackets
+  cleaned = cleaned.replace(/,(\s*[}\]])/g, '$1');
+
+  // Fix incomplete JSON by ensuring balanced braces
+  const openBraces = (cleaned.match(/\{/g) || []).length;
+  const closeBraces = (cleaned.match(/\}/g) || []).length;
+  if (openBraces > closeBraces) {
+    cleaned += '}'.repeat(openBraces - closeBraces);
+  }
+
+  // Fix incomplete arrays
+  const openBrackets = (cleaned.match(/\[/g) || []).length;
+  const closeBrackets = (cleaned.match(/\]/g) || []).length;
+  if (openBrackets > closeBrackets) {
+    cleaned += ']'.repeat(openBrackets - closeBrackets);
+  }
+
+  // Remove control characters that break JSON parsing
+  cleaned = cleaned.replace(/[\x00-\x1F\x7F]/g, '');
+
+  return cleaned;
+}
+
+/**
  * Extract JSON from model output, handling both plain JSON and code-block-wrapped JSON.
  * @param content - The string content that potentially contains JSON.
  * @returns Parsed JSON object
@@ -47,7 +76,7 @@ export function removeThinkTags(text: string): string {
  */
 export function extractJsonFromModelOutput(content: string): Record<string, unknown> {
   try {
-    let processedContent = content;
+    let processedContent = content.trim();
 
     // Handle Llama's tool call format first
     if (processedContent.includes('<|tool_call_start_id|>')) {
@@ -126,11 +155,108 @@ export function extractJsonFromModelOutput(content: string): Record<string, unkn
       }
     }
 
-    // Parse the cleaned content
-    return JSON.parse(processedContent);
+    // Try multiple extraction strategies for Gemini Nano and other models
+    const strategies = [
+      // Strategy 1: Direct parse with sanitization
+      () => {
+        const sanitized = sanitizeJsonString(processedContent);
+        return JSON.parse(sanitized);
+      },
+
+      // Strategy 2: Find JSON object/array using regex (most reliable)
+      () => {
+        // Match JSON object or array, handling nested structures
+        const jsonRegex = /(\{(?:[^{}]|(?:\{[^{}]*\}))*\}|\[(?:[^\[\]]|(?:\[[^\[\]]*\]))*\])/;
+        const match = processedContent.match(jsonRegex);
+        if (match) {
+          const sanitized = sanitizeJsonString(match[0]);
+          return JSON.parse(sanitized);
+        }
+        throw new Error('No JSON found with regex');
+      },
+
+      // Strategy 3: Extract between first { and last }
+      () => {
+        const firstBrace = processedContent.indexOf('{');
+        const lastBrace = processedContent.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+          const extracted = processedContent.substring(firstBrace, lastBrace + 1);
+          const sanitized = sanitizeJsonString(extracted);
+          return JSON.parse(sanitized);
+        }
+        throw new Error('No curly braces found');
+      },
+
+      // Strategy 4: Remove common text before/after JSON
+      () => {
+        let cleaned = processedContent;
+        // Remove common prefixes
+        cleaned = cleaned.replace(/^(Here's the response|Here is the JSON|Response|Output|Result)[:;]?\s*/i, '');
+        // Remove trailing explanation (match everything after double newline)
+        cleaned = cleaned.replace(/\n\n[\s\S]*$/, '');
+        const sanitized = sanitizeJsonString(cleaned.trim());
+        return JSON.parse(sanitized);
+      },
+
+      // Strategy 5: Find JSON between newlines
+      () => {
+        const lines = processedContent
+          .split('\n')
+          .map(l => l.trim())
+          .filter(l => l.length > 0);
+        for (const line of lines) {
+          if (line.startsWith('{') || line.startsWith('[')) {
+            try {
+              const sanitized = sanitizeJsonString(line);
+              return JSON.parse(sanitized);
+            } catch (e) {
+              continue;
+            }
+          }
+        }
+        throw new Error('No valid JSON line found');
+      },
+
+      // Strategy 6: Aggressive extraction - find largest valid JSON substring
+      () => {
+        const firstBrace = processedContent.indexOf('{');
+        if (firstBrace === -1) throw new Error('No opening brace found');
+
+        // Try to find the longest valid JSON starting from first brace
+        for (let end = processedContent.length; end > firstBrace; end--) {
+          const candidate = processedContent.substring(firstBrace, end);
+          try {
+            const sanitized = sanitizeJsonString(candidate);
+            return JSON.parse(sanitized);
+          } catch (e) {
+            continue;
+          }
+        }
+        throw new Error('No valid JSON substring found');
+      },
+    ];
+
+    // Try each strategy
+    let lastError: Error | null = null;
+    for (let i = 0; i < strategies.length; i++) {
+      try {
+        const result = strategies[i]();
+        console.log(`[extractJson] Successfully parsed with strategy ${i + 1}`);
+        return result;
+      } catch (e) {
+        lastError = e as Error;
+        continue;
+      }
+    }
+
+    // If all strategies failed, throw detailed error
+    throw lastError || new Error('All parsing strategies failed');
   } catch (e) {
-    console.warn(`Failed to parse model output: ${content} ${e instanceof Error ? e.message : String(e)}`);
-    throw new Error('Could not parse response.');
+    const errorMsg = e instanceof Error ? e.message : String(e);
+    console.error(
+      `[extractJson] Failed to parse model output. Error: ${errorMsg}. Content preview: ${content.slice(0, 500)}`,
+    );
+    throw new Error(`Could not parse response: ${errorMsg}`);
   }
 }
 

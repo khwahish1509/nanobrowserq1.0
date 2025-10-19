@@ -1,0 +1,93 @@
+╔══════════════════════════════════════════════════════════════╗
+║         GEMINI NANO INTEGRATION - QUICK REFERENCE            ║
+╚══════════════════════════════════════════════════════════════╝
+
+✅ WHAT WAS FIXED:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  OLD (Incorrect):           NEW (Correct):
+  ────────────────          ─────────────────
+  window.ai                  window.LanguageModel ✓
+  ai.availability()          LanguageModel.capabilities() ✓
+  availability === 'ready'   capabilities.available === 'readily' ✓
+
+📋 QUICK START CHECKLIST:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  [ ] 1. Test console: window.LanguageModel (should exist)
+  [ ] 2. Check capabilities: await window.LanguageModel.capabilities()
+  [ ] 3. Verify status: { available: 'readily' }
+  [ ] 4. Load extension from /dist folder
+  [ ] 5. Settings → Add "Gemini Nano (Built-in)" provider
+  [ ] 6. Assign to Navigator or Planner
+  [ ] 7. Test with simple task
+
+🧪 CONSOLE TEST (Copy & Paste):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Quick test
+(async () => {
+  const caps = await window.LanguageModel.capabilities();
+  console.log('Status:', caps.available);
+  if (caps.available === 'readily') {
+    const session = await window.LanguageModel.create({
+      temperature: 0.7,
+      topK: 40
+    });
+    const result = await session.prompt('Say hello!');
+    console.log('Response:', result);
+    session.destroy();
+  }
+})();
+
+🔧 IF NOT WORKING:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1. Chrome Flags:
+     chrome://flags/#prompt-api-for-gemini-nano → Enabled
+     chrome://flags/#optimization-guide-on-device-model → Enabled
+     (Restart Chrome after enabling)
+
+  2. Download Model:
+     chrome://components/ → Find "Optimization Guide On Device Model"
+     → Click "Check for update"
+     (Wait for ~1.7GB download)
+
+  3. Verify Requirements:
+     • Chrome 127+ (Canary/Dev/Beta)
+     • Windows 10/11 or macOS 13+
+     • ≥22GB free disk space
+     • ≥4GB GPU VRAM
+
+📁 FILES CREATED/MODIFIED:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ✓ packages/storage/lib/settings/types.ts (enum, models, params)
+  ✓ packages/storage/lib/settings/llmProviders.ts (detection)
+  ✓ chrome-extension/src/background/agent/geminiNano.ts (NEW)
+  ✓ chrome-extension/src/background/agent/helper.ts (integration)
+  ✓ dist/ (rebuilt extension - ready to load!)
+
+🎯 USAGE IN NANOBROWSER:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1. Extension Settings → LLM Providers
+  2. Select: "Gemini Nano (Built-in)"
+  3. API Key: Leave blank (or type "local")
+  4. Agent Models → Navigator/Planner
+  5. Provider: "Gemini Nano (Built-in)"
+  6. Model: "gemini-nano"
+  7. Test: "Go to example.com"
+
+💡 BENEFITS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ✓ 100% Offline - No API calls
+  ✓ Zero Cost - No API fees
+  ✓ Private - Data stays local
+  ✓ Fast - No network latency
+  ✓ Seamless - Works like other providers
+
+⚠️  LIMITATIONS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  • Smaller model (not as powerful as GPT-4/Claude)
+  • Best for: summarization, classification, simple tasks
+  • Not ideal for: complex reasoning, large context
+  • Chrome-only (won't work in Firefox, Safari)
+
+═══════════════════════════════════════════════════════════════
+        Built with ❤️ for Nanobrowser - Ready to test! 🚀
+═══════════════════════════════════════════════════════════════

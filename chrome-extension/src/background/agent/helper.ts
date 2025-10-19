@@ -10,6 +10,7 @@ import { ChatOllama } from '@langchain/ollama';
 import { ChatDeepSeek } from '@langchain/deepseek';
 import { AIMessage } from '@langchain/core/messages';
 import type { BaseMessage } from '@langchain/core/messages';
+import { ChatGeminiNano } from './geminiNano';
 
 const maxTokens = 1024 * 4;
 
@@ -374,6 +375,13 @@ export function createChatModel(providerConfig: ProviderConfig, modelConfig: Mod
       args.configuration = configuration;
 
       return new ChatLlama(args);
+    }
+    case ProviderTypeEnum.GeminiNano: {
+      const args = {
+        temperature: (modelConfig.parameters?.temperature ?? 0.5) as number,
+        topK: (modelConfig.parameters?.topK ?? 40) as number,
+      };
+      return new ChatGeminiNano(args);
     }
     default: {
       // by default, we think it's a openai-compatible provider

@@ -19,6 +19,7 @@ export enum ProviderTypeEnum {
   Groq = 'groq',
   Cerebras = 'cerebras',
   Llama = 'llama',
+  GeminiNano = 'gemini_nano',
   CustomOpenAI = 'custom_openai',
 }
 
@@ -45,6 +46,7 @@ export const llmProviderModelNames = {
     'Llama-4-Maverick-17B-128E-Instruct-FP8',
     'Llama-4-Scout-17B-16E-Instruct-FP8',
   ],
+  [ProviderTypeEnum.GeminiNano]: ['gemini-nano'],
   // Custom OpenAI providers don't have predefined models as they are user-defined
 };
 
@@ -148,6 +150,16 @@ export const llmProviderParameters = {
     [AgentNameEnum.Navigator]: {
       temperature: 0.3,
       topP: 0.85,
+    },
+  },
+  [ProviderTypeEnum.GeminiNano]: {
+    [AgentNameEnum.Planner]: {
+      temperature: 0.7,
+      topK: 40,
+    },
+    [AgentNameEnum.Navigator]: {
+      temperature: 0.3,
+      topK: 20,
     },
   },
 };
