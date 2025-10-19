@@ -1,4 +1,4 @@
-<h1 align="center">
+<h1 align="centNanobrowser, tarayıcınızda çalışan açık kaynaklı bir yapay zeka tarayıcı otomasyon aracıdır. Gemini Nano modeli ve çoklu ajan sistemiyle birlikte OpenAI Operator'a ücretsiz bir alternatiftir.r">
     <img src="https://github.com/user-attachments/assets/ec60b0c4-87ba-48f4-981a-c55ed0e8497b" height="100" width="375" alt="banner" /><br>
 </h1>
 
@@ -32,10 +32,10 @@ OpenAI Operator'ın aylık 200 dolarlık ücretinden kurtulmak mı istiyorsunuz?
 
 - **%100 Ücretsiz** - Abonelik ücreti veya gizli maliyetler yok. Sadece yükleyin ve kendi API anahtarlarınızı kullanın, ne kadar kullanırsanız o kadar ödersiniz.
 - **Gizlilik Odaklı** - Her şey yerel tarayıcınızda çalışır. Kimlik bilgileriniz yalnızca sizde kalır, bulut hizmetleriyle paylaşılmaz.
-- **Esnek LLM Seçenekleri** - Tercih ettiğiniz LLM sağlayıcılarına bağlanın, farklı ajanlar için farklı modeller seçme özgürlüğünüz olsun.
+- **Gemini Nano Entegrasyonu** - Google'ın güçlü Gemini Nano modelinin yerleşik desteği, web otomasyonu için optimize edilmiştir.
 - **Tamamen Açık Kaynak** - Tarayıcınızın nasıl otomatikleştirildiğini şeffaf bir şekilde görün. Gizli süreçler yok.
 
-> **Not:** Şu anda OpenAI, Anthropic, Gemini, Ollama, Groq, Cerebras ve OpenAI uyumlu özel sağlayıcıları destekliyoruz. Daha fazlası yolda.
+> **Not:** Nanobrowser yalnızca Gemini Nano modelini kullanır ve tüm web otomasyon görevleri için tutarlı ve verimli performans sağlar.
 
 ## 📊 Temel Özellikler
 

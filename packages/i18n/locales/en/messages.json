@@ -333,9 +333,6 @@
   "options_models_labels_topP": {
     "message": "Top P"
   },
-  "options_models_labels_topK": {
-    "message": "Top K"
-  },
   "options_models_labels_reasoning": {
     "message": "Reasoning"
   },

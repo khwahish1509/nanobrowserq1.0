@@ -1,16 +1,7 @@
 import { type ProviderConfig, type ModelConfig, ProviderTypeEnum } from '@extension/storage';
-import { ChatOpenAI, AzureChatOpenAI } from '@langchain/openai';
-import { ChatAnthropic } from '@langchain/anthropic';
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
-import { ChatXAI } from '@langchain/xai';
-import { ChatGroq } from '@langchain/groq';
-import { ChatCerebras } from '@langchain/cerebras';
 import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
-import { ChatOllama } from '@langchain/ollama';
-import { ChatDeepSeek } from '@langchain/deepseek';
-import { AIMessage } from '@langchain/core/messages';
 import type { BaseMessage } from '@langchain/core/messages';
-import { ChatGeminiNano } from './geminiNano';
 
 const maxTokens = 1024 * 4;
 
@@ -375,13 +366,6 @@ export function createChatModel(providerConfig: ProviderConfig, modelConfig: Mod
       args.configuration = configuration;
 
       return new ChatLlama(args);
-    }
-    case ProviderTypeEnum.GeminiNano: {
-      const args = {
-        temperature: (modelConfig.parameters?.temperature ?? 0.5) as number,
-        topK: (modelConfig.parameters?.topK ?? 40) as number,
-      };
-      return new ChatGeminiNano(args);
     }
     default: {
       // by default, we think it's a openai-compatible provider

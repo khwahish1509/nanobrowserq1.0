@@ -1,0 +1,29 @@
+{
+  "options_models_apiKey": {
+    "message": "Gemini API Key"
+  },
+  "options_models_apiKey_placeholder": {
+    "message": "Enter your Gemini API key"
+  },
+  "options_models_saving": {
+    "message": "Saving..."
+  },
+  "options_models_save": {
+    "message": "Save Changes"
+  },
+  "options_models_labels_model": {
+    "message": "Model"
+  },
+  "options_models_labels_temperature": {
+    "message": "Temperature"
+  },
+  "options_models_labels_topP": {
+    "message": "Top P"
+  },
+  "options_models_agents_navigator": {
+    "message": "Navigator Agent"
+  },
+  "options_models_agents_planner": {
+    "message": "Planner Agent"
+  }
+}

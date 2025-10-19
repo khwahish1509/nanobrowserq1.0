@@ -13,7 +13,7 @@
 
 ## 🌐 Nanobrowser
 
-Nanobrowser es una herramienta de automatización web con IA que se ejecuta en tu navegador. Es una alternativa gratuita a OpenAI Operator, con opciones flexibles de modelos de lenguaje (LLM) y un sistema multiagente.
+Nanobrowser es una herramienta de automatización web con IA que se ejecuta en tu navegador. Es una alternativa gratuita a OpenAI Operator, que utiliza el potente modelo Gemini Nano con un sistema multiagente.
 
 ⬇️ Descarga [Nanobrowser desde Chrome Web Store](https://chromewebstore.google.com/detail/nanobrowser/imbddededgmcgfhfpcjmijokokekbkal) gratis
 
@@ -32,10 +32,10 @@ Nanobrowser es una herramienta de automatización web con IA que se ejecuta en t
 
 - **100% Gratis** - Sin suscripciones ni costos ocultos. Solo instala y usa tus propias claves de API, pagando únicamente por lo que tú consumas.
 - **Enfoque En Privacidad** - Todo se ejecuta en tu navegador local. Tus credenciales permanecen contigo y nunca se comparten con ningún servicio en la nube.
-- **Opciones Flexibles de LLM** - Conéctate con tu proveedor de LLM preferido con la libertad de elegir diferentes modelos para diferentes agentes.
+- **Integración con Gemini Nano** - Soporte integrado para el potente modelo Gemini Nano de Google, optimizado para la automatización web eficiente.
 - **Totalmente Open Source** - Transparencia total en cómo se automatiza tu navegador. Sin procesos ocultos ni cajas negras.
 
-> **Nota:** Actualmente ofrecemos soporte para OpenAI, Anthropic, Gemini, Ollama y proveedores personalizados compatibles con OpenAI, próximamente se ofrecerá soporte a más proveedores.
+> **Nota:** Nanobrowser utiliza exclusivamente el modelo Gemini Nano, asegurando un rendimiento consistente y eficiente para todas las tareas de automatización web.
 
 
 ## 📊 Funciones Clave

@@ -33,8 +33,6 @@ export interface ExecutorExtraArgs {
   extractorLLM?: BaseChatModel;
   agentOptions?: Partial<AgentOptions>;
   generalSettings?: GeneralSettingsConfig;
-  navigatorProvider?: string;
-  plannerProvider?: string;
 }
 
 export class Executor {
@@ -78,14 +76,12 @@ export class Executor {
       chatLLM: navigatorLLM,
       context: context,
       prompt: this.navigatorPrompt,
-      provider: extraArgs?.navigatorProvider,
     });
 
     this.planner = new PlannerAgent({
       chatLLM: plannerLLM,
       context: context,
       prompt: this.plannerPrompt,
-      provider: extraArgs?.plannerProvider,
     });
 
     this.context = context;
