@@ -52,7 +52,7 @@ export const agentModelStore: AgentModelStorage = {
   setAgentModel: async (agent: AgentNameEnum, config: ModelConfig) => {
     validateModelConfig(config);
     // Merge default parameters with provided parameters
-    const defaultParams = getModelParameters(agent, config.provider);
+    const defaultParams = getModelParameters(agent);
     const mergedConfig = {
       ...config,
       parameters: {
@@ -73,7 +73,7 @@ export const agentModelStore: AgentModelStorage = {
     if (!config) return undefined;
 
     // Merge default parameters with stored parameters
-    const defaultParams = getModelParameters(agent, config.provider);
+    const defaultParams = getModelParameters(agent);
     return {
       ...config,
       parameters: {
