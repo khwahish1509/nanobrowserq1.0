@@ -5,12 +5,11 @@ import { AgentNameEnum, llmProviderParameters } from './types';
 
 // Interface for a single model configuration
 export interface ModelConfig {
+  // providerId, the key of the provider in the llmProviderStore, not the provider name
   provider: string;
   modelName: string;
-  parameters?: {
-    temperature: number;
-    topP: number;
-  };
+  parameters?: Record<string, unknown>;
+  reasoningEffort?: 'minimal' | 'low' | 'medium' | 'high'; // For o-series models (OpenAI and Azure)
 }
 
 // Interface for storing multiple agent model configurations
@@ -43,8 +42,9 @@ function validateModelConfig(config: ModelConfig) {
   }
 }
 
-function getModelParameters(agent: AgentNameEnum): { temperature: number; topP: number } {
-  return agent === AgentNameEnum.Navigator ? { temperature: 0.1, topP: 0.1 } : { temperature: 0.2, topP: 0.1 };
+function getModelParameters(agent: AgentNameEnum, provider: string): Record<string, unknown> {
+  const providerParams = llmProviderParameters[provider as keyof typeof llmProviderParameters]?.[agent];
+  return providerParams ?? { temperature: 0.1, topP: 0.1 };
 }
 
 export const agentModelStore: AgentModelStorage = {
@@ -52,7 +52,7 @@ export const agentModelStore: AgentModelStorage = {
   setAgentModel: async (agent: AgentNameEnum, config: ModelConfig) => {
     validateModelConfig(config);
     // Merge default parameters with provided parameters
-    const defaultParams = getModelParameters(agent);
+    const defaultParams = getModelParameters(agent, config.provider);
     const mergedConfig = {
       ...config,
       parameters: {
@@ -73,7 +73,7 @@ export const agentModelStore: AgentModelStorage = {
     if (!config) return undefined;
 
     // Merge default parameters with stored parameters
-    const defaultParams = getModelParameters(agent);
+    const defaultParams = getModelParameters(agent, config.provider);
     return {
       ...config,
       parameters: {

@@ -1,4 +1,13 @@
-import { useEffect, useState } from 'react';
+/*
+ * Changes:
+ * - Added a searchable select component with filtering capability for model selection
+ * - Implemented keyboard navigation and accessibility for the custom dropdown
+ * - Added search functionality that filters models based on user input
+ * - Added keyboard event handlers to close dropdowns with Escape key
+ * - Styling for both light and dark mode themes
+ */
+import { useEffect, useState, useRef, useCallback } from 'react';
+import type { KeyboardEvent } from 'react';
 import { Button } from '@extension/ui';
 import {
   llmProviderStore,
@@ -7,30 +16,58 @@ import {
   AgentNameEnum,
   llmProviderModelNames,
   ProviderTypeEnum,
+  getDefaultDisplayNameFromProviderId,
+  getDefaultProviderConfig,
+  getDefaultAgentModelParams,
   type ProviderConfig,
 } from '@extension/storage';
 import { t } from '@extension/i18n';
 
+// Helper function to check if a model is an OpenAI reasoning model (O-series or GPT-5 models)
+function isOpenAIReasoningModel(modelName: string): boolean {
+  // Extract the model name without provider prefix if present
+  let modelNameWithoutProvider = modelName;
+  if (modelName.includes('>')) {
+    // Handle "provider>model" format
+    modelNameWithoutProvider = modelName.split('>')[1];
+  }
+  if (modelNameWithoutProvider.startsWith('openai/')) {
+    modelNameWithoutProvider = modelNameWithoutProvider.substring(7);
+  }
+  return (
+    modelNameWithoutProvider.startsWith('o') ||
+    (modelNameWithoutProvider.startsWith('gpt-5') && !modelNameWithoutProvider.startsWith('gpt-5-chat'))
+  );
+}
+
+function isAnthropicOpusModel(modelName: string): boolean {
+  // Extract the model name without provider prefix if present
+  let modelNameWithoutProvider = modelName;
+
+  if (modelName.includes('>')) {
+    // Handle "provider>model" format
+    modelNameWithoutProvider = modelName.split('>')[1];
+  }
+
+  // Check if the model starts with 'claude-opus'
+  return modelNameWithoutProvider.startsWith('claude-opus');
+}
+
 interface ModelSettingsProps {
-  isDarkMode?: boolean;
+  isDarkMode?: boolean; // Controls dark/light theme styling
 }
 
 export const ModelSettings = ({ isDarkMode = false }: ModelSettingsProps) => {
-  const [geminiConfig, setGeminiConfig] = useState<ProviderConfig>({
-    type: ProviderTypeEnum.Gemini,
-    apiKey: '',
-    name: 'Gemini',
-    modelNames: llmProviderModelNames[ProviderTypeEnum.Gemini],
-  });
-
+  const [providers, setProviders] = useState<Record<string, ProviderConfig>>({});
+  const [modifiedProviders, setModifiedProviders] = useState<Set<string>>(new Set());
+  const [providersFromStorage, setProvidersFromStorage] = useState<Set<string>>(new Set());
   const [selectedModels, setSelectedModels] = useState<Record<AgentNameEnum, string>>({
-    [AgentNameEnum.Navigator]: llmProviderModelNames[ProviderTypeEnum.Gemini][0],
-    [AgentNameEnum.Planner]: llmProviderModelNames[ProviderTypeEnum.Gemini][0],
+    [AgentNameEnum.Navigator]: '',
+    [AgentNameEnum.Planner]: '',
   });
-
   const [modelParameters, setModelParameters] = useState<Record<AgentNameEnum, { temperature: number; topP: number }>>({
-    [AgentNameEnum.Navigator]: { temperature: 0.1, topP: 0.1 },
-    [AgentNameEnum.Planner]: { temperature: 0.2, topP: 0.1 },
+    [AgentNameEnum.Navigator]: { temperature: 0, topP: 0 },
+    [AgentNameEnum.Planner]: { temperature: 0, topP: 0 },
   });
 
   // State for reasoning effort for O-series models

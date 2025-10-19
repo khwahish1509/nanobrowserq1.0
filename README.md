@@ -36,10 +36,10 @@ Looking for a powerful AI browser agent without the $200/month price tag of Open
 
 - **100% Free** - No subscription fees or hidden costs. Just install and use your own API keys, and you only pay what you use with your own API keys.
 - **Privacy-Focused** - Everything runs in your local browser. Your credentials stay with you, never shared with any cloud service.
-- **Gemini Nano Integration** - Built-in support for Google's powerful Gemini Nano model, optimized for efficient web automation.
+- **Flexible LLM Options** - Connect to your preferred LLM providers with the freedom to choose different models for different agents.
 - **Fully Open Source** - Complete transparency in how your browser is automated. No black boxes or hidden processes.
 
-> **Note:** Nanobrowser exclusively uses the Gemini Nano model, ensuring consistent and efficient performance for all web automation tasks.
+> **Note:** We currently support OpenAI, Anthropic, Gemini, Ollama, Groq, Cerebras, Llama and custom OpenAI-Compatible providers, more providers will be supported.
 
 
 ## 📊 Key Features

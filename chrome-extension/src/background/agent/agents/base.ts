@@ -105,9 +105,6 @@ export abstract class BaseAgent<T extends z.ZodType, M = unknown> {
 
   // Set whether to use structured output based on the model name
   private setWithStructuredOutput(): boolean {
-    if (this.provider === ProviderTypeEnum.GeminiNano) {
-      return false;
-    }
     if (this.modelName === 'deepseek-reasoner' || this.modelName === 'deepseek-r1') {
       return false;
     }
@@ -168,58 +165,31 @@ export abstract class BaseAgent<T extends z.ZodType, M = unknown> {
     logger.debug(`[${this.modelName}] Using manual JSON extraction fallback method`);
     const convertedInputMessages = convertInputMessages(inputMessages, this.modelName);
 
-    // Retry logic for Gemini Nano and other models that may have inconsistent JSON output
-    const maxRetries = this.provider === ProviderTypeEnum.GeminiNano ? 3 : 1;
-    let lastError: Error | null = null;
+    try {
+      const response = await this.chatLLM.invoke(convertedInputMessages, {
+        signal: this.context.controller.signal,
+        ...this.callOptions,
+      });
 
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        logger.debug(`[${this.modelName}] Attempt ${attempt}/${maxRetries} to invoke LLM`);
-
-        const response = await this.chatLLM.invoke(convertedInputMessages, {
-          signal: this.context.controller.signal,
-          ...this.callOptions,
-        });
-
-        if (typeof response.content === 'string') {
-          response.content = removeThinkTags(response.content);
-          try {
-            const extractedJson = extractJsonFromModelOutput(response.content);
-            const parsed = this.validateModelOutput(extractedJson);
-            if (parsed) {
-              logger.debug(`[${this.modelName}] Successfully parsed response on attempt ${attempt}`);
-              return parsed;
-            }
-          } catch (error) {
-            lastError = error as Error;
-            logger.debug(`[${this.modelName}] Attempt ${attempt} failed to extract JSON:`, error);
-
-            // If this is not the last attempt and we're using Gemini Nano, try again
-            if (attempt < maxRetries && this.provider === ProviderTypeEnum.GeminiNano) {
-              logger.debug(`[${this.modelName}] Retrying with stronger JSON instruction...`);
-              continue;
-            }
-
-            throw error;
+      if (typeof response.content === 'string') {
+        response.content = removeThinkTags(response.content);
+        try {
+          const extractedJson = extractJsonFromModelOutput(response.content);
+          const parsed = this.validateModelOutput(extractedJson);
+          if (parsed) {
+            return parsed;
           }
-        }
-      } catch (error) {
-        if (isAbortedError(error)) {
-          throw error;
-        }
-        lastError = error as Error;
-        logger.error(`[${this.modelName}] LLM call failed on attempt ${attempt}:`, error);
-
-        // If not the last attempt, continue to retry
-        if (attempt < maxRetries) {
-          continue;
+        } catch (error) {
+          logger.error(`[${this.modelName}] Failed to extract JSON from response:`, error);
+          const errorMessage = `Failed to extract JSON from response: ${error}`;
+          throw new Error(errorMessage);
         }
       }
+    } catch (error) {
+      logger.error(`[${this.modelName}] LLM call failed in manual extraction mode:`, error);
+      throw error;
     }
-
-    const errorMessage = lastError
-      ? `Failed to extract JSON from response after ${maxRetries} attempts: ${lastError}`
-      : `Failed to parse response from ${this.modelName}`;
+    const errorMessage = `Failed to parse response from ${this.modelName}`;
     logger.error(errorMessage);
     throw new ResponseParseError('Could not parse response');
   }

@@ -14,7 +14,7 @@
 
 ## 🌐 Nanobrowser
 
-Nanobrowser 是一款在瀏覽器中執行的開放原始碼 AI 網頁自動化工具。作為 OpenAI Operator 的免費替代方案，使用 Gemini Nano 模型與多代理系統。
+Nanobrowser 是一款在瀏覽器中執行的開放原始碼 AI 網頁自動化工具。作為 OpenAI Operator 的免費替代方案，提供彈性的 LLM 選項與多代理系統。
 
 ⬇️ 從 [Chrome 線上應用程式商店](https://chromewebstore.google.com/detail/nanobrowser/imbddededgmcgfhfpcjmijokokekbkal) 免費取得 Nanobrowser
 
@@ -33,10 +33,10 @@ Nanobrowser 是一款在瀏覽器中執行的開放原始碼 AI 網頁自動化�
 
 - **100% 免費** - 無訂閱費或隱藏成本。安裝後使用自己的 API 金鑰，只需支付給供應商的 API 使用費。
 - **注重隱私** - 所有處理都在本機瀏覽器內完成。您的認證資訊會儲存在本機，絕不會與任何雲端服務分享。
-- **Gemini Nano 整合** - 內建支援 Google 強大的 Gemini Nano 模型，為網頁自動化最佳化。
+- **彈性的 LLM 選項** - 可連接您偏好的 LLM 供應商，並可為不同代理選擇不同模型。
 - **完全開放原始碼** - 瀏覽器自動化過程完全透明，沒有任何黑箱作業或隱藏的處理程序。
 
-> **請注意：** Nanobrowser 專門使用 Gemini Nano 模型，確保所有網頁自動化任務的一致性和高效能。
+> **請注意：** 我們目前支援 OpenAI、Anthropic、Gemini、Ollama、Groq、Cerebras、Llama 以及自訂的 OpenAI 相容供應商，未來將會支援更多。
 
 
 ## 📊 主要功能
